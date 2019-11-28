@@ -220,6 +220,8 @@ class SliceModeller():
         if show:
             fig.show()
         return fig
+
+    
     # ================ #
     #   Properties     #
     # ================ #

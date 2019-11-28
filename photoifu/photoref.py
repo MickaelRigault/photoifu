@@ -148,6 +148,21 @@ class PhotoReference():
         from shapely import geometry
         return geometry.Polygon(radecs)
 
+
+    def get_iso_contours(self, iso, unit="mag", on="fakeimage", asdict=False):
+        """ """
+        from skimage import measure
+        
+        if unit not in ["mag", "flux", "count"]:
+            raise ValueError("unit must be mag, flux or count. %s given"%unit)
+        
+        iso = np.atleast_1d(iso)
+        isocounts = iso if unit =="count" else self.mag_to_count(iso) if unit == "mag" else self.flux_to_count(iso)
+        if asdict:
+            return {iso_:[np.stack([c[:,1], c[:,0]]).T for c in measure.find_contours(getattr(self,on), iso_)] for iso_ in isocounts}
+        
+        return [[np.stack([c[:,1], c[:,0]]).T for c in measure.find_contours(getattr(self,on), iso_)] for iso_ in isocounts]
+
     def get_host_coords(self, source="sep", inpixels=False):
         """ """
         host_radec = self._pstarget.get_nearest_catdata(source=source,relative=True)[["raMean","decMean"]].values[0]
@@ -160,7 +175,7 @@ class PhotoReference():
     # ------- #
     def download_reference(self, band="r"):
         """ """
-        from . import panstarrs
+        from pymage import panstarrs
         if not self.has_coords():
             raise AttributeError("No coordinate set.")
         self._pstarget = panstarrs.PS1Target.from_coord(*self.coords)
@@ -288,7 +303,13 @@ class PhotoReference():
         """ """
         return self.coords is not None
 
-    # // Host
+    # // Host & Catalog
+    @property
+    def catdata(self):
+        """ """
+        return self._pstarget.catdata
+
+    
     def host_coords(self):
         """ """
         return 

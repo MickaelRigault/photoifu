@@ -33,6 +33,12 @@ def check_dependencies():
         install_requires.append('propobject')
 
     try:
+        import pymage
+        # Only for panstarrs
+    except ImportError:
+        install_requires.append('pymage')
+        
+    try:
         import pixelproject
     except ImportError:
         install_requires.append('pixelproject')
